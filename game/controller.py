@@ -1,3 +1,5 @@
+from random import randrange
+
 PLAYER_A = "PLAYER_A"
 PLAYER_B = "PLAYER_B"
 DRAW = "DRAW"
@@ -5,7 +7,7 @@ DRAW = "DRAW"
 class GameController():
 
     def __init__(self):
-        self.current_player = PLAYER_A
+        self.current_player = PLAYER_A if randrange(0, 100) % 2 == 0 else PLAYER_B
         self.board = [[None for x in range(3)] for x in range(3)]
 
     def current_player_A(self):

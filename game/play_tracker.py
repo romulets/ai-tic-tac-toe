@@ -1,22 +1,9 @@
 import csv
+from bot_player import flat_board
 from controller import PLAYER_A, PLAYER_B, DRAW
 
 WINNER = "WINNER"
 LOSER = "LOSER"
-
-def flat_board(game):
-    isFull = lambda x, y: 0 if game.board[x][y] is None else 1
-    return [
-            isFull(0,0),
-            isFull(0,1),
-            isFull(0,2),
-            isFull(1,0),
-            isFull(1,1),
-            isFull(1,2),
-            isFull(2,0),
-            isFull(2,1),
-            isFull(2,2),
-    ]
 
 class PlayTracker():
 
@@ -34,7 +21,7 @@ class PlayTracker():
 
         with open(file_dir, "a+") as file:
             writer = csv.writer(file, quoting=csv.QUOTE_NONNUMERIC)
-            writer.writerow(plays)
+            writer.writerows(plays)
                 
 
     def get_plays_summary(self, game):
