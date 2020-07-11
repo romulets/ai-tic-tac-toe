@@ -1,7 +1,6 @@
 import csv
 from controller import PLAYER_A, PLAYER_B, DRAW
 
-CSV_FILE = "resources/plays.csv"
 WINNER = "WINNER"
 LOSER = "LOSER"
 
@@ -30,13 +29,13 @@ class PlayTracker():
 
         plays.append(flat_board(game) + ["_" + str(x) + str(y)])
 
-    def store(self, game):
+    def store(self, game, file_dir):
         plays = self.get_plays_summary(game)
 
-        with open(CSV_FILE, "a+") as file:
+        with open(file_dir, "a+") as file:
             writer = csv.writer(file, quoting=csv.QUOTE_NONNUMERIC)
-            for play in plays:
-                writer.writerow(play)
+            writer.writerow(plays)
+                
 
     def get_plays_summary(self, game):
         resultA, resultB = self.get_labels(game)
