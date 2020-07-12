@@ -25,10 +25,17 @@ def get_piece(cell):
     if cell == "PLAYER_B": return PLAYER_B
     return " "
 
-def read_play(game):
-    x = int(input("X: "))
-    y = int(input("Y: "))
-    if not game.is_valid_play(x, y):
-        print("Invalid.")
-        x, y = read_play(game)
-    return x, y
+def read_user_play(game):
+    def read_play(game):
+        x = int(input("X: "))
+        y = int(input("Y: "))
+        if not game.is_valid_play(x, y):
+            print("Invalid.")
+            x, y = read_play(game)
+        return x, y
+
+    print("Your turn")
+    return read_play(game)
+
+def print_bot_play(x, y):
+    print("Bot plays", x, y)

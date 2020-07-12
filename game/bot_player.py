@@ -1,40 +1,71 @@
+from operator import itemgetter
 import pickle
 import csv
 import itertools
 
 class BotPlayer():
 
-    def __init__(self, model_dir, categories_dir):
+    def __init__(self, model_dir, play_categories_dir, result_categories_dir):
         self.model = self.load_model(model_dir)
-        self.categories = self.load_categories(categories_dir)
+        self.play_categories = self.load_play_categories(play_categories_dir)
+        self.result_categories = self.load_result_categories(result_categories_dir)
 
     def load_model(self, dir):
         with open(dir, "rb") as file:
             return pickle.load(file)
 
-    def load_categories(self, dir):
+    def load_play_categories(self, dir):
         with open(dir, "r") as file:
             reader = csv.reader(file)
             return { int(cat[0]): cat[1] for cat in reader }
+    
+    def load_result_categories(self, dir):
+        with open(dir, "r") as file:
+            reader = csv.reader(file)
+            return { cat[1]: int(cat[0]) for cat in reader }
 
     def play(self, game):
-        x, y = self.predict_next_play(game)
-        if game.is_valid_play(x, y):
-            print("Predicted play")
-            return x, y
-
-        for x, y in itertools.product(range(3), range(3)):
-            if game.is_valid_play(x, y):
-                print("Sequence play")
-                return x, y
-                
+        return self.get_best_play(game)
         
+    def get_best_play(self, game):
+        possible_plays = self.get_possible_plays(game)
+        probabilities = self.model.predict_proba(possible_plays)
 
-    def predict_next_play(self, game):
-        prediction = self.model.predict([flat_board(game)])[0]
-        play = self.categories.get(prediction)
-        assert not play is None, "Play should not be null"
-        return int(play[1]), int(play[2])
+        structured_plays = []
+        for proba, play in zip(probabilities, possible_plays):
+            structured_plays.append({
+                "play": play[-1],
+                "win": proba[self.result_categories["WINNER"]],
+                "draw": proba[self.result_categories["DRAW"]],
+                "loose": proba[self.result_categories["LOSER"]]
+            })
+        
+        structured_plays = sorted(structured_plays, key=itemgetter('loose'), reverse=True)
+        structured_plays = sorted(structured_plays, key=itemgetter('draw'))
+        structured_plays = sorted(structured_plays, key=itemgetter('win'))
+
+        best_play = list(structured_plays)[0]
+        print(best_play)
+        return self.convert_play(self.play_categories[best_play.get("play")])
+
+    def get_possible_plays(self, game):
+        plays = list(
+            map(
+                lambda play: play[0],
+                filter(
+                    lambda play_cat: game.is_valid_play(self.convert_play(play_cat[1])[0], self.convert_play(play_cat[1])[1]), 
+                    map(
+                        lambda play: (play, self.play_categories[play]),
+                        range(9)
+                    )
+                )
+            )
+        )
+
+        return [ flat_board(game) + [ play ] for play in plays]
+
+    def convert_play(self, play_str):
+        return int(play_str[1]), int(play_str[2])
 
 
 def flat_board(game):
