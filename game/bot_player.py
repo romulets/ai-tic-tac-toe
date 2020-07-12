@@ -2,6 +2,7 @@ from operator import itemgetter
 import pickle
 import csv
 import itertools
+from random import shuffle
 
 class BotPlayer():
 
@@ -62,7 +63,9 @@ class BotPlayer():
             )
         )
 
-        return [ flat_board(game) + [ play ] for play in plays]
+        plays = [ flat_board(game) + [ play ] for play in plays]
+        shuffle(plays)
+        return plays
 
     def convert_play(self, play_str):
         return int(play_str[1]), int(play_str[2])
